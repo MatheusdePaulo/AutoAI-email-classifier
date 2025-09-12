@@ -21,14 +21,11 @@ limiter = Limiter(
 
 # --- Configuração da IA (Carregar modelos apenas uma vez) ---
 try:
-    # Para deploy, é altamente recomendado carregar modelos localmente ou via cache
-    # pois o download a cada reinício pode ser lento e consumir banda.
-    # Se você for usar um ambiente sem internet (como algumas configs de deploy),
-    # certifique-se de baixar e cachear esses modelos antes.
-    # Classificador Zero-shot baseado em DistilBERT, mais leve
+    # Otimização final com os menores modelos possíveis
+    # Classificador Zero-shot DistilBERT (já é bem leve)
     classifier = pipeline("zero-shot-classification", model="typeform/distilbert-base-uncased-mnli")
-    # Gerador de texto DistilGPT2
-    text_generator = pipeline("text-generation", model="distilgpt2")
+    # Gerador de texto "minúsculo" para garantir que caiba na memória
+    text_generator = pipeline("text-generation", model="sshleifer/tiny-gpt2")
 except Exception as e:
     print(f"Erro ao carregar modelos da Hugging Face: {e}")
     print("Certifique-se de ter uma conexão com a internet ou de que os modelos estão em cache.")
