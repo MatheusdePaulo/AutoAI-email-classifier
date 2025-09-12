@@ -25,8 +25,10 @@ try:
     # pois o download a cada reinício pode ser lento e consumir banda.
     # Se você for usar um ambiente sem internet (como algumas configs de deploy),
     # certifique-se de baixar e cachear esses modelos antes.
-    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-    text_generator = pipeline("text-generation", model="gpt2")
+    # Modelo de classificação menor e mais leve
+    classifier = pipeline("zero-shot-classification", model="valhalla/distilbart-mnli-12-3") 
+    # Modelo de geração de texto muito menor que o GPT-2
+    text_generator = pipeline("text-generation", model="distilgpt2") 
 except Exception as e:
     print(f"Erro ao carregar modelos da Hugging Face: {e}")
     print("Certifique-se de ter uma conexão com a internet ou de que os modelos estão em cache.")
