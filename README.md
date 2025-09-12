@@ -16,7 +16,7 @@ Uma prévia visual da aplicação em funcionamento:
 
 A versão de produção desta aplicação está hospedada no Render e pode ser acessada através do seguinte link:
 
-**[LINK DA APLICAÇÃO SERÁ ADICIONADO AQUI APÓS O DEPLOY]**
+**[https://autoai-email-classifier.onrender.com]**
 
 ## Funcionalidades Chave
 
