@@ -16,12 +16,12 @@ Uma prévia visual da aplicação em funcionamento:
 
 A versão de produção desta aplicação está hospedada no Render e pode ser acessada através do seguinte link:
 
-**[https://autoai-email-classifier.onrender.com]**
+**[https://autoai-classifier.onrender.com/]**
 
 ## Funcionalidades Chave
 
 -   **Classificação Inteligente:** Utiliza um modelo de `zero-shot classification` da Hugging Face (`facebook/bart-large-mnli`) para categorizar e-mails sem a necessidade de treinamento prévio com dados específicos do domínio.
--   **Sugestão de Respostas:** Gera respostas automáticas e contextuais baseadas na classificação do e-mail, utilizando um modelo de `text-generation` (`gpt2`).
+-   **Sugestão de Respostas:** Fornece respostas-padrão (templates) baseadas na categoria identificada pela IA, garantindo consistência e agilidade.
 -   **Interface Amigável:** Design responsivo e intuitivo, permitindo a inserção de e-mails via digitação de texto ou upload de arquivo `.txt`.
 -   **Animações de Carregamento:** Feedback visual durante o processamento da IA para uma melhor experiência do usuário.
 -   **Design Robusto:** Layout com rodapé fixo e elementos centralizados para uma estética profissional.
@@ -33,7 +33,7 @@ A versão de produção desta aplicação está hospedada no Render e pode ser a
 ## Tecnologias Utilizadas
 
 -   **Backend:** Python 3.x, Flask
--   **Inteligência Artificial:** Hugging Face Transformers (Zero-shot Classification com BART, Text Generation com GPT-2)
+-   **Inteligência Artificial:** Hugging Face Transformers (Zero-shot Classification)
 -   **Frontend:** HTML5, CSS3 (Bulma Framework), JavaScript
 -   **Segurança:** Flask-Limiter
 -   **Servidor de Produção:** Gunicorn
