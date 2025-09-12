@@ -1,37 +1,48 @@
 from flask import Flask, request, jsonify, render_template
 from transformers import pipeline
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+import os
+import time
 
 app = Flask(__name__)
 
-# Configuração do Limiter
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["200 per day", "10 per minute"],
-    storage_uri="memory://",
-    headers_enabled=True
-)
+# --- Rate Limiting Manual Simples ---
+request_times = {}
+MAX_REQUESTS_PER_MINUTE = 5
 
-# --- Configuração da IA (Apenas o Classificador) ---
-try:
-    # Mantemos apenas o modelo de classificação, que é mais leve
-    classifier = pipeline("zero-shot-classification", model="typeform/distilbert-base-uncased-mnli")
-except Exception as e:
-    print(f"Erro ao carregar modelo da Hugging Face: {e}")
-    classifier = None
+def check_rate_limit(ip):
+    current_time = time.time()
+    if ip in request_times:
+        requests = [t for t in request_times[ip] if current_time - t < 60]
+        if len(requests) >= MAX_REQUESTS_PER_MINUTE:
+            return False
+        requests.append(current_time)
+        request_times[ip] = requests
+    else:
+        request_times[ip] = [current_time]
+    return True
+# --- Fim do Rate Limiting ---
 
-# --- Rotas da Aplicação ---
+# --- Configuração da IA ---
+classifier = pipeline("zero-shot-classification", 
+                     model="typeform/distilbert-base-uncased-mnli")
+
+text_generator = pipeline("text-generation", 
+                         model="distilgpt2")
+
+# --- Rotas ---
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/classificar', methods=['POST'])
-@limiter.limit("5/minute")
 def classificar_email():
-    if not classifier:
-        return jsonify({"error": "Modelo de IA não carregado."}), 500
+    # Verificação de Rate Limit
+    client_ip = request.remote_addr
+    if not check_rate_limit(client_ip):
+        return jsonify({"error": "Muitas requisições. Tente novamente em 1 minuto."}), 429
+    
+    if not classifier or not text_generator:
+        return jsonify({"error": "Modelos de IA não carregados."}), 500
 
     data = request.get_json()
     if not data:
@@ -42,7 +53,6 @@ def classificar_email():
     if not email_content:
         return jsonify({"error": "Conteúdo do email não fornecido."}), 400
 
-    # --- Lógica de Classificação com IA ---
     candidate_labels = ["solicitação de ação", "atualização de status", "problema técnico", 
                         "informação geral", "agradecimento", "cumprimento"]
     
@@ -65,32 +75,25 @@ def classificar_email():
             max_score = score
             categoria_final = label_mapping[label]
     
-    if max_score < 0.4: # Aumentando um pouco a exigência de confiança
+    if max_score < 0.4:
         categoria_final = "Não Classificado"
 
-    # --- Lógica de Geração de Resposta (SEM IA, baseada em templates) ---
+    prompt_prefix = ""
     if categoria_final == "Produtivo":
-        resposta_sugerida = (
-            "Prezado(a),\n\n"
-            "Recebemos sua mensagem e já estamos analisando o conteúdo.\n"
-            "Em breve retornaremos com mais informações sobre sua solicitação.\n\n"
-            "Atenciosamente,\nEquipe de Automação"
-        )
-    elif categoria_final == "Improdutivo":
-        resposta_sugerida = (
-            "Prezado(a),\n\n"
-            "Agradecemos o seu contato e a sua mensagem!\n\n"
-            "Tenha um excelente dia.\n\n"
-            "Atenciosamente,\nEquipe de Automação"
-        )
-    else: # "Não Classificado"
-        resposta_sugerida = (
-            "Prezado(a),\n\n"
-            "Sua mensagem foi recebida com sucesso.\n"
-            "Um de nossos atendentes irá revisá-la e responder em breve.\n\n"
-            "Atenciosamente,\nEquipe de Automação"
-        )
+        prompt_prefix = "Escreva uma resposta profissional curta para um e-mail de trabalho que precisa de ação, começando com 'Prezado(a), recebemos sua mensagem e estamos verificando'."
+    else:
+        prompt_prefix = "Escreva uma resposta profissional curta e amigável para um e-mail de trabalho que não precisa de ação, começando com 'Prezado(a), agradecemos o contato!'."
     
+    generated_text = text_generator(
+        prompt_prefix,
+        max_new_tokens=40,
+        num_return_sequences=1,
+        do_sample=True,
+        temperature=0.7
+    )[0]['generated_text']
+
+    resposta_sugerida = generated_text
+
     return jsonify({
         "categoria": categoria_final,
         "resposta_sugerida": resposta_sugerida,
