@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classificador de Email com IA</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="is-flex-direction-column"></body>
+    <section class="hero is-primary">
+        <div class="hero-body hero-layout">
+            <div class="logo-and-title">
+                <div class="logo-container">
+                    <i class="fa-solid fa-robot fa-3x mr-2"></i> 
+                    <span class="app-logo-text">AutoAI</span>
+                </div>
+                <div class="hero-title-container">
+                    <p class="title">
+                        Classificador de Email com IA
+                    </p>
+                    <p class="subtitle mt-3">
+                        Classifique e responda emails automaticamente com inteligência artificial.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section main-content"> <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-three-quarters-tablet is-two-thirds-desktop">
+
+                    <div class="box has-text-centered" id="input-box">
+                        <h2 class="title is-4">Como deseja inserir o email?</h2>
+                        
+                        <div id="input-choice-area">
+                            <div class="columns is-vcentered">
+                                <div class="column">
+                                    <div class="choice-box" id="choice-type">
+                                        <span class="icon is-large">
+                                            <i class="fa-solid fa-keyboard fa-2x"></i>
+                                        </span>
+                                        <p class="title is-5 mt-3">Digitar Texto</p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="choice-box" id="choice-upload">
+                                        <span class="icon is-large">
+                                            <i class="fa-solid fa-file-arrow-up fa-2x"></i>
+                                        </span>
+                                        <p class="title is-5 mt-3">Fazer Upload</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form-input-area" style="display: none;">
+                             <form id="emailForm">
+                                <div id="textarea-wrapper" style="display: none;">
+                                    <div class="field">
+                                        <div class="control">
+                                            <textarea id="emailContent" class="textarea" placeholder="Cole o conteúdo do email..." rows="8"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="upload-wrapper" style="display: none;">
+                                    <label class="file-label-custom">
+                                        <input class="file-input" type="file" name="emailFile" id="emailFile" accept=".txt">
+                                        <span class="button is-link is-fullwidth is-medium">
+                                            <span class="icon">
+                                                <i class="fas fa-upload"></i>
+                                            </span>
+                                            <span>Escolher arquivo (.txt)</span>
+                                        </span>
+                                        <span class="file-name-custom" id="fileName">
+                                            Nenhum arquivo selecionado
+                                        </span>
+                                    </label>
+                                    <p class="help mt-2">PDFs devem ter o texto copiado e colado.</p>
+                                </div>
+                                
+                                <div class="field is-grouped is-centered mt-5">
+                                    <p class="control">
+                                        <button type="submit" class="button is-primary is-medium" id="processButton">
+                                            <span class="icon"><i class="fas fa-paper-plane"></i></span>
+                                            <span>Processar</span>
+                                            <span class="icon is-small is-loading-spinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                                        </button>
+                                    </p>
+                                    <p class="control">
+                                        <button type="button" class="button is-light is-medium" id="back-to-choice-button">
+                                            <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                                            <span>Voltar</span>
+                                        </button>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="results-area" class="mt-6" style="display: none;">
+                        <h2 class="title is-4 has-text-centered">Resultados</h2>
+                        <div class="columns">
+                            <div class="column">
+                                <div class="box result-box" id="categoryBox">
+                                    <h3 class="title is-5">Classificação
+                                        <span class="icon is-pulled-right" id="categoryIcon"><i class="fas fa-question-circle"></i></span>
+                                    </h3>
+                                    <p id="resultCategory">Aguardando...</p>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="box result-box" id="responseBox">
+                                    <h3 class="title is-5">Resposta Sugerida
+                                        <button class="button is-small is-light is-pulled-right" id="copyResponseButton" title="Copiar resposta">
+                                            <span class="icon is-small" id="copyResponseIcon"><i class="fas fa-copy"></i></span>
+                                        </button>
+                                    </h3>
+                                    <p id="resultResponse">Aguardando...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="has-text-centered">
+                             <button class="button is-text" id="toggleDebugButton">Mostrar Debug</button>
+                        </div>
+                        <div class="mt-4" id="debugInfo" style="display: none;">
+                            <pre class="has-background-light p-3 is-size-7" id="rawClassificationOutput"></pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section has-background-light">
+        <div class="container">
+            <div class="columns has-text-centered">
+                <div class="column">
+                    <div class="icon-feature">
+                        <i class="fa-solid fa-cogs fa-3x"></i>
+                    </div>
+                    <h4 class="title is-4 mt-4">Como Usar</h4>
+                    <p>Escolha entre digitar ou fazer upload de um arquivo .txt. Clique em "Processar" e nossa IA analisará e classificará o conteúdo em segundos, sugerindo uma resposta apropriada.</p>
+                </div>
+                <div class="column">
+                    <div class="icon-feature">
+                        <i class="fa-solid fa-shield-halved fa-3x"></i>
+                    </div>
+                    <h4 class="title is-4 mt-4">Segurança e Privacidade</h4>
+                    <p>Sua segurança é nossa prioridade. Os emails são processados em memória e não são armazenados em nossos servidores. Garantimos total privacidade e confidencialidade dos seus dados.</p>
+                </div>
+                <div class="column">
+                    <div class="icon-feature">
+                        <i class="fa-solid fa-cloud-arrow-up fa-3x"></i> 
+                    </div>
+                    <h4 class="title is-4 mt-4">Acesse de Qualquer Lugar</h4>
+                    <p>Você pode usar nosso classificador em qualquer lugar, a qualquer momento, com uma conexão à internet. Nossa IA funciona totalmente na nuvem.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>Powered by <strong>AutoAI</strong></p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

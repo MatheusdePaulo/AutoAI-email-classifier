@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+env/
+venv/
+*.env
+.vscode/
+
+# Editor/IDE files
+.idea/
+*.swp
+*.bak
+*.swo
+
+# Dependências
+/venv/
+/env/
+
+# Dados gerados por modelos de IA (se aplicável)
+*.bin
+*.pt
+*.onnx
+*.safetensors
+*.json # Cuidado: se tiver arquivos JSON de configuração do projeto, remova esta linha ou seja mais específico
+# logs
+*.log

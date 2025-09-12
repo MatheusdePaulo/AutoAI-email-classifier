@@ -1,0 +1,213 @@
+:root {
+    --primary-color: #00D1B2; /* Verde-água padrão do Bulma */
+    --link-color: #3273DC; /* Azul padrão do Bulma */
+    --success-color: #48C774;
+    --info-color: #3E8ED0;
+    --warning-color: #FFDD57;
+    --danger-color: #F14668;
+}
+
+html {
+    scroll-behavior: smooth;
+    background-color: #f9fafb; /* Fundo global um pouco acinzentado */
+}
+
+.hero.is-primary {
+    background-color: var(--primary-color);
+    background-image: linear-gradient(135deg, hsl(171, 100%, 29%), hsl(171, 100%, 41%));
+}
+
+.box {
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.02);
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* Estilização customizada para o botão de upload de arquivo */
+.file-input {
+    display: none;
+}
+.file-label-custom {
+    cursor: pointer;
+    display: block;
+}
+.file-name-custom {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.875em;
+    color: #7a7a7a;
+}
+.button.is-link {
+    background-color: var(--link-color);
+}
+.button.is-link:hover {
+    background-color: hsl(217, 71%, 48%);
+}
+
+.result-box {
+    border-top: 4px solid #dbdbdb; /* Borda padrão */
+    transition: border-color 0.4s ease;
+}
+
+/* Cores da borda para feedback de classificação */
+.result-box.is-success { border-color: var(--success-color); }
+.result-box.is-info { border-color: var(--info-color); }
+.result-box.is-warning { border-color: var(--warning-color); }
+.result-box.is-danger { border-color: var(--danger-color); }
+.result-box.is-loading { border-color: #dbdbdb; }
+
+#resultResponse {
+    white-space: pre-wrap; /* Mantém as quebras de linha da resposta */
+}
+
+/* Seção de ícones informativos */
+.icon-feature {
+    color: var(--primary-color);
+}
+.section.has-background-light {
+    background-color: #f0f2f5 !important;
+}
+
+.footer {
+    background-color: #eef2f7;
+    padding: 2rem 1.5rem;
+}
+
+/* Spinner de carregamento no botão */
+.button .is-loading-spinner {
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.choice-box {
+    border: 2px solid #dbdbdb; /* Borda cinza claro */
+    border-radius: 8px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+}
+
+.choice-box .icon {
+    color: var(--link-color); /* Ícone azul */
+    transition: transform 0.3s ease;
+}
+
+.choice-box:hover {
+    border-color: var(--link-color); /* Borda azul no hover */
+    box-shadow: 0 0.8em 1.5em -0.3em rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.04);
+    transform: translateY(-5px);
+}
+
+.choice-box:hover .icon {
+    transform: scale(1.1);
+}
+
+/* --- NOVOS ESTILOS PARA LAYOUT FLEXBOX (RODAPÉ FIXO) --- */
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex-grow: 1; /* Faz esta seção crescer para ocupar o espaço disponível */
+}
+
+/* Garante um espaçamento consistente acima da seção de informações */
+.main-content {
+    padding-bottom: 50px;
+}
+
+/* --- CENTRALIZAÇÃO VERTICAL DA CAIXA DE INPUT --- */
+#input-box{
+    margin-top: 100px; /* Adiciona uma margem superior para empurrar a caixa para baixo */
+    margin-bottom: 100px; /* Adiciona uma margem inferior para dar mais espaço */
+    background-color: white; /* Garante que o fundo seja branco */
+    width: auto; /* Permite que a largura se ajuste automaticamente */
+    max-width: 700px; /* Garante que não fique muito largo em telas grandes */
+}
+
+/* Garante que o contêiner principal tenha flex-grow para empurrar o footer */
+.main-content {
+    flex-grow: 1;
+    display: flex; /* Garante que o flex do body funcione */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente o conteúdo dentro do main-content */
+}
+
+/* Garante um espaçamento consistente acima da seção de informações */
+.main-content .container {
+    padding-bottom: 50px; /* Mantém o padding inferior se necessário */
+}
+/* --- ANIMAÇÃO DE PROCESSAMENTO --- */
+
+/* Keyframes para a animação de pulsação da borda */
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(62, 142, 208, 0.7); /* Sombra azul (cor de --info-color) */
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(62, 142, 208, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(62, 142, 208, 0);
+  }
+}
+
+/* Classe que aplica a animação */
+.result-box.is-processing {
+  border-color: var(--info-color) !important; /* Força a borda a ser azul durante o processamento */
+  animation: pulse-border 2s infinite;
+}
+
+/* --- ESTILOS PARA O NOVO LAYOUT DO CABEÇALHO (HERO) --- */
+
+.hero-layout {
+    display: flex;
+    justify-content: center; /* Centraliza o conteúdo principal horizontalmente */
+    align-items: center;
+    width: 100%;
+    position: relative; /* Necessário para posicionar a logo absolutamente */
+    padding-left: 100px; /* Garante espaço para a logo se for absolute */
+    padding-right: 100px; /* Garante simetria */
+}
+
+.logo-and-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza o título e subtítulo */
+    text-align: center;
+    width: 100%; /* Ocupa a largura total para centralizar */
+}
+
+.logo-container {
+    display: flex; /* Para alinhar ícone e texto */
+    align-items: center; /* Centraliza verticalmente o ícone e o texto */
+    color: rgba(255, 255, 255, 0.9); /* Cor do ícone */
+    position: absolute; /* Posição absoluta para a logo */
+    left: 20px; /* Distância da esquerda */
+    top: 50%; /* Alinha verticalmente */
+    transform: translateY(-50%); /* Ajusta para centralizar perfeitamente */
+    z-index: 10; /* Garante que fique por cima de outros elementos se houver */
+}
+
+.hero-text-container {
+    flex-grow: 1; /* Permite que o container de texto cresça e ocupe o espaço central */
+}
+/* --- ESTILOS PARA O TEXTO DA LOGO --- */
+
+.app-logo-text {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: -1px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.hero-title-container {
+    /* Pode ser ajustado se precisar de margens específicas */
+}
