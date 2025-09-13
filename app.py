@@ -1,3 +1,16 @@
+"""
+Aplicação Flask para classificação de e-mails com Inteligência Artificial.
+
+Esta aplicação web permite que os usuários insiram o conteúdo de um e-mail
+via texto ou upload de arquivo .txt. O conteúdo é então processado por
+dois modelos de IA da Hugging Face:
+1. Um modelo de Zero-Shot Classification para categorizar o e-mail.
+2. Um modelo de Text Generation para sugerir uma resposta apropriada.
+
+A aplicação inclui um sistema de rate limiting para prevenir abusos e
+é projetada para ser implantada como um contêiner Docker.
+"""
+
 from flask import Flask, request, jsonify, render_template
 from transformers import pipeline
 import os
@@ -32,10 +45,24 @@ text_generator = pipeline("text-generation",
 # --- Rotas ---
 @app.route('/')
 def index():
+    """Renderiza a página inicial da aplicação (index.html)."""
     return render_template('index.html')
 
 @app.route('/classificar', methods=['POST'])
 def classificar_email():
+    """
+    Recebe o conteúdo de um e-mail via POST, classifica-o usando um modelo
+    de zero-shot e gera uma resposta sugerida.
+
+    A requisição deve ser um JSON com a chave 'email_content'.
+    Aplica-se um limite de requisições por IP.
+
+    Returns:
+        JSON: Um objeto contendo a categoria, a resposta sugerida e
+              os dados brutos da classificação.
+        JSON, status 429: Se o limite de requisições for excedido.
+        JSON, status 400: Se o conteúdo do e-mail não for fornecido.
+    """
     # Verificação de Rate Limit
     client_ip = request.headers.get('x-forwarded-for', request.remote_addr)
     if not check_rate_limit(client_ip):

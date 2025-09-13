@@ -40,15 +40,35 @@ A versão de produção desta aplicação está hospedada no Hugging Face Spaces
     - **Servidor de Produção (Gunicorn):** Uso de um servidor WSGI seguro e robusto para o deploy.
     - **Execução como non-root:** O contêiner Docker é executado com um usuário de privilégios limitados para maior segurança.
 
-## Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas
 
-- **Backend:** Python 3.9, Flask
-- **Inteligência Artificial:** Hugging Face Transformers (Zero-shot Classification, Text Generation)
-- **Frontend:** HTML5, CSS3 (Bulma Framework), JavaScript
-- **Containerização:** Docker
-- **Servidor de Produção:** Gunicorn
-- **Hospedagem:** Hugging Face Spaces
-- **Controle de Versão:** Git
+O projeto foi construído utilizando um conjunto de tecnologias modernas para backend, frontend e deploy:
+
+| Categoria | Tecnologia |
+|-----------|------------|
+| **Backend** | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white) |
+| **Inteligência Artificial** | ![Hugging Face](https://img.shields.io/badge/🤗%20Transformers-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black) |
+| **Frontend** | ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) ![Bulma](https://img.shields.io/badge/Bulma-00D1B2?style=for-the-badge&logo=bulma&logoColor=white) |
+| **Infraestrutura & Deploy** | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white) |
+
+## 💡 Desafios e Aprendizados
+
+O desenvolvimento deste projeto foi uma jornada prática de resolução de problemas, especialmente na fase de deploy, que simulou desafios comuns em ambientes de produção.
+
+* **Desafio Inicial: Limitação de Recursos na Nuvem**
+    * A primeira tentativa de deploy foi em uma plataforma PaaS convencional (Render.com). No entanto, a aplicação falhou repetidamente devido ao limite de 512MB de RAM do plano gratuito, que se mostrou insuficiente para carregar os modelos de linguagem da biblioteca `transformers`.
+
+* **Solução Estratégica: Containerização e Migração**
+    * Para superar a limitação de memória, a estratégia foi pivotada. A aplicação foi **containerizada com Docker**, criando um ambiente de execução portátil e consistente.
+    * O deploy foi migrado para o **Hugging Face Spaces**, uma plataforma otimizada para aplicações de IA que oferece recursos de hardware mais robustos no plano gratuito, incluindo 16GB de RAM.
+
+* **Aprendizados no Processo de Deploy:**
+    * **Gerenciamento Fino de Dependências:** Foi necessário realizar um ajuste detalhado no arquivo `requirements.txt` para garantir a compatibilidade de todas as bibliotecas com o ambiente Python 3.9 do contêiner.
+    * **Depuração de Permissões em Docker:** Surgiram desafios complexos de permissão de escrita (`PermissionError`) dentro do contêiner, relacionados ao cache dos modelos de IA. A solução envolveu a reestruturação do `Dockerfile` para gerenciar corretamente as permissões de diretórios.
+    * **Infraestrutura como Código:** O uso do `Dockerfile` reforçou a importância de definir a infraestrutura da aplicação como código, garantindo que o ambiente de produção seja replicável e confiável.
+
+Este processo não apenas resultou em uma aplicação funcional, mas também demonstrou a capacidade de diagnosticar problemas de infraestrutura, adaptar a estratégia de tecnologia e implementar soluções robustas para garantir o sucesso do deploy.
+
 
 ## Como Rodar o Projeto Localmente
 
