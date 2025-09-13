@@ -37,7 +37,7 @@ def index():
 @app.route('/classificar', methods=['POST'])
 def classificar_email():
     # Verificação de Rate Limit
-    client_ip = request.remote_addr
+    client_ip = request.headers.get('x-forwarded-for', request.remote_addr)
     if not check_rate_limit(client_ip):
         return jsonify({"error": "Muitas requisições. Tente novamente em 1 minuto."}), 429
     

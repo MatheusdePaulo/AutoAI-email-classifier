@@ -1,3 +1,12 @@
+---
+title: AutoAI Email Classifier
+emoji: 🤖
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 8000
+---
+
 # 🤖 AutoAI: Classificador de Email com IA
 
 ## Visão Geral do Projeto
@@ -10,35 +19,34 @@ O objetivo principal é otimizar a triagem de e-mails, permitindo que usuários 
 
 Uma prévia visual da aplicação em funcionamento:
 
-![https://autoai-email-classifier.onrender.com](img/AutoAI.png)
+![Prévia da Aplicação](img/AutoAI.png)
 
 ## 🚀 Aplicação Online
 
-A versão de produção desta aplicação está hospedada no Render e pode ser acessada através do seguinte link:
-
-**[https://autoai-classifier.onrender.com/]**
+A versão de produção desta aplicação está hospedada no Hugging Face Spaces e pode ser acessada através do link no topo desta página.
 
 ## Funcionalidades Chave
 
--   **Classificação Inteligente:** Utiliza um modelo de `zero-shot classification` da Hugging Face (`facebook/bart-large-mnli`) para categorizar e-mails sem a necessidade de treinamento prévio com dados específicos do domínio.
--   **Sugestão de Respostas:** Fornece respostas-padrão (templates) baseadas na categoria identificada pela IA, garantindo consistência e agilidade.
--   **Interface Amigável:** Design responsivo e intuitivo, permitindo a inserção de e-mails via digitação de texto ou upload de arquivo `.txt`.
--   **Animações de Carregamento:** Feedback visual durante o processamento da IA para uma melhor experiência do usuário.
--   **Design Robusto:** Layout com rodapé fixo e elementos centralizados para uma estética profissional.
--   **Medidas de Segurança Implementadas:**
-    -   **Rate Limiting (Flask-Limiter):** Proteção contra abuso e ataques de negação de serviço (DoS) na API de classificação, limitando o número de requisições por IP.
-    -   **HTTPS Automático:** Garantido pela plataforma de deploy (Render), assegura que toda a comunicação é criptografada.
-    -   **Servidor de Produção (Gunicorn):** Uso de um servidor WSGI seguro para deploy, desativando o modo de depuração em ambiente de produção.
+- **Classificação Inteligente:** Utiliza um modelo de `zero-shot classification` da Hugging Face para categorizar e-mails sem a necessidade de treinamento prévio com dados específicos do domínio.
+- **Sugestão de Respostas:** Utiliza um modelo de geração de texto para fornecer respostas contextuais baseadas na categoria identificada pela IA.
+- **Interface Amigável:** Design responsivo e intuitivo, permitindo a inserção de e-mails via digitação de texto ou upload de arquivo `.txt`.
+- **Feedback Visual:** Animações e indicadores visuais durante o processamento da IA para uma melhor experiência do usuário.
+- **Design Robusto:** Layout profissional com uma interface limpa e organizada.
+- **Medidas de Segurança:**
+    - **Rate Limiting:** Proteção contra abuso na API de classificação, limitando o número de requisições por IP.
+    - **HTTPS Automático:** Garantido pela plataforma Hugging Face Spaces.
+    - **Servidor de Produção (Gunicorn):** Uso de um servidor WSGI seguro e robusto para o deploy.
+    - **Execução como non-root:** O contêiner Docker é executado com um usuário de privilégios limitados para maior segurança.
 
 ## Tecnologias Utilizadas
 
--   **Backend:** Python 3.x, Flask
--   **Inteligência Artificial:** Hugging Face Transformers (Zero-shot Classification)
--   **Frontend:** HTML5, CSS3 (Bulma Framework), JavaScript
--   **Segurança:** Flask-Limiter
--   **Servidor de Produção:** Gunicorn
--   **Hospagem:** Render.com
--   **Controle de Versão:** Git & GitHub
+- **Backend:** Python 3.9, Flask
+- **Inteligência Artificial:** Hugging Face Transformers (Zero-shot Classification, Text Generation)
+- **Frontend:** HTML5, CSS3 (Bulma Framework), JavaScript
+- **Containerização:** Docker
+- **Servidor de Produção:** Gunicorn
+- **Hospedagem:** Hugging Face Spaces
+- **Controle de Versão:** Git
 
 ## Como Rodar o Projeto Localmente
 
@@ -46,15 +54,15 @@ Siga estes passos para configurar e executar a aplicação em sua máquina local
 
 ### Pré-requisitos
 
--   Python 3.x instalado
--   pip (gerenciador de pacotes do Python)
+- Python 3.9+ instalado
+- Docker instalado (recomendado para replicar o ambiente de produção)
 
 ### Instalação
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [https://github.com/MatheusdePaulo/AutoAI-email-classifier.git](https://github.com/MatheusdePaulo/AutoAI-email-classifier.git)
-    cd AutoAI-email-classifier
+    git clone [https://huggingface.co/spaces/FranciscoMatheus/autoai-email-classifier](https://huggingface.co/spaces/FranciscoMatheus/autoai-email-classifier)
+    cd autoai-email-classifier
     ```
 
 2.  **Crie e ative um ambiente virtual:**
@@ -71,7 +79,7 @@ Siga estes passos para configurar e executar a aplicação em sua máquina local
     pip install -r requirements.txt
     ```
 
-### Executando a Aplicação
+### Executando a Aplicação (Modo Desenvolvimento)
 
 1.  Com o ambiente virtual ativado, execute o servidor Flask:
     ```bash
@@ -80,24 +88,28 @@ Siga estes passos para configurar e executar a aplicação em sua máquina local
 
 2.  Abra seu navegador e acesse: `http://127.0.0.1:5000/`
 
-## Deploy na Nuvem (Render.com)
+### Executando com Docker (Modo Produção)
 
-A aplicação está configurada para ser facilmente implantada em plataformas como o Render.com. O deploy é automatizado através de:
+1.  Construa a imagem Docker:
+    ```bash
+    docker build -t autoai-app .
+    ```
 
--   `requirements.txt`: Lista de dependências Python.
--   `Procfile`: Define o comando de inicialização do servidor (Gunicorn).
--   `runtime.txt`: Especifica a versão do Python.
+2.  Execute o contêiner:
+    ```bash
+    docker run -p 8000:8000 autoai-app
+    ```
+3.  Abra seu navegador e acesse: `http://127.0.0.1:8000/`
 
-Para implantar no Render, conecte seu repositório GitHub e configure um "Web Service", usando as configurações detectadas automaticamente.
+## Deploy na Nuvem (Hugging Face Spaces)
+
+A aplicação está configurada para deploy automático no Hugging Face Spaces através de:
+
+- `Dockerfile`: Define o ambiente completo, dependências e comando de execução, garantindo consistência entre desenvolvimento e produção.
+- `README.md` (este arquivo): Contém a configuração do SDK e da porta para o Hugging Face Spaces.
 
 ---
 
 ## Contribuição
 
-Contribuições são bem-vindas! Se você tiver sugestões, melhorias ou encontrar bugs, sinta-se à vontade para abrir uma *issue* ou enviar um *pull request*.
-
----
-
-## Licença
-
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes. *(Você precisaria criar um arquivo LICENSE separadamente se desejar)*
+Contribuições são bem-vindas! Se você tiver sugestões, melhorias ou encontrar bugs, sinta-se à vontade para abrir uma *issue* ou um *pull request*.
