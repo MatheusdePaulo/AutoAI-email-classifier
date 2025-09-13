@@ -23,7 +23,9 @@ Uma prévia visual da aplicação em funcionamento:
 
 ## 🚀 Aplicação Online
 
-A versão de produção desta aplicação está hospedada no Hugging Face Spaces e pode ser acessada através do link no topo desta página.
+A versão de produção desta aplicação está hospedada no Hugging Face Spaces e pode ser acessada diretamente pelo link abaixo:
+
+**[➡️ Acessar a Aplicação Online](https://huggingface.co/spaces/FranciscoMatheus/autoai-email-classifier)**
 
 ## Funcionalidades Chave
 
