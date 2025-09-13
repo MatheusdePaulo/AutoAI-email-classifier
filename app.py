@@ -10,11 +10,10 @@ dois modelos de IA da Hugging Face:
 A aplicação inclui um sistema de rate limiting para prevenir abusos e
 é projetada para ser implantada como um contêiner Docker.
 """
-
 from flask import Flask, request, jsonify, render_template
 from transformers import pipeline
-import os
 import time
+import re # Importa a biblioteca de expressões regulares
 
 app = Flask(__name__)
 
@@ -33,16 +32,15 @@ def check_rate_limit(ip):
     else:
         request_times[ip] = [current_time]
     return True
-# --- Fim do Rate Limiting ---
 
 # --- Configuração da IA ---
+# Usamos um modelo mais robusto e multilíngue para melhor entendimento.
 classifier = pipeline("zero-shot-classification", 
-                     model="typeform/distilbert-base-uncased-mnli")
+                      model="facebook/bart-large-mnli")
 
 text_generator = pipeline("text-generation", 
-                         model="distilgpt2")
+                          model="distilgpt2")
 
-# --- Rotas ---
 @app.route('/')
 def index():
     """Renderiza a página inicial da aplicação (index.html)."""
@@ -68,63 +66,59 @@ def classificar_email():
     if not check_rate_limit(client_ip):
         return jsonify({"error": "Muitas requisições. Tente novamente em 1 minuto."}), 429
     
-    if not classifier or not text_generator:
-        return jsonify({"error": "Modelos de IA não carregados."}), 500
-
     data = request.get_json()
-    if not data:
-        data = request.form
-        
     email_content = data.get('email_content', '').strip()
 
     if not email_content:
         return jsonify({"error": "Conteúdo do email não fornecido."}), 400
 
-    candidate_labels = ["solicitação de ação", "atualização de status", "problema técnico", 
-                        "informação geral", "agradecimento", "cumprimento"]
+    # *** MUDANÇA 1: Rótulos mais descritivos para ajudar a IA ***
+    candidate_labels = [
+        "e-mail de trabalho que necessita de uma ação ou resposta técnica", 
+        "e-mail casual, agradecimento ou cumprimento que não precisa de ação"
+    ]
     
-    classification_results = classifier(email_content, candidate_labels, multi_label=True)
+    # Usamos uma hipótese para guiar o modelo, tornando-o mais preciso
+    hypothesis_template = "O tópico deste e-mail é {}."
+    classification_results = classifier(email_content, candidate_labels, hypothesis_template=hypothesis_template)
     
-    label_mapping = {
-        "solicitação de ação": "Produtivo",
-        "atualização de status": "Produtivo",
-        "problema técnico": "Produtivo",
-        "informação geral": "Improdutivo",
-        "agradecimento": "Improdutivo",
-        "cumprimento": "Improdutivo"
-    }
+    # Determina a categoria com base no rótulo de maior pontuação
+    top_label = classification_results['labels'][0]
+    
+    if "necessita de uma ação" in top_label:
+        categoria_final = "Produtivo"
+    else:
+        categoria_final = "Improdutivo"
 
-    categoria_final = "Não Classificado"
-    max_score = 0.0
-    
-    for label, score in zip(classification_results['labels'], classification_results['scores']):
-        if score > max_score and label in label_mapping:
-            max_score = score
-            categoria_final = label_mapping[label]
-    
-    if max_score < 0.4:
-        categoria_final = "Não Classificado"
-
-    prompt_prefix = ""
+    # Define o prompt para a geração de texto
     if categoria_final == "Produtivo":
         prompt_prefix = "Escreva uma resposta profissional curta para um e-mail de trabalho que precisa de ação, começando com 'Prezado(a), recebemos sua mensagem e estamos verificando'."
     else:
         prompt_prefix = "Escreva uma resposta profissional curta e amigável para um e-mail de trabalho que não precisa de ação, começando com 'Prezado(a), agradecemos o contato!'."
     
-    generated_text = text_generator(
+    generated_text_raw = text_generator(
         prompt_prefix,
-        max_new_tokens=40,
+        max_new_tokens=50, # Aumentamos um pouco para dar mais espaço
         num_return_sequences=1,
         do_sample=True,
-        temperature=0.7
+        temperature=0.7,
+        pad_token_id=text_generator.tokenizer.eos_token_id # Evita warnings
     )[0]['generated_text']
 
-    resposta_sugerida = generated_text
+    # *** MUDANÇA 2: Limpeza e formatação da resposta da IA ***
+    # Remove o prompt inicial da resposta gerada
+    resposta_limpa = generated_text_raw.replace(prompt_prefix, "").strip()
+    
+    # Usa expressão regular para pegar apenas a primeira frase completa
+    match = re.search(r"^(.*?[\.\!\?])", resposta_limpa)
+    if match:
+        resposta_sugerida = match.group(1)
+    else:
+        resposta_sugerida = resposta_limpa # Usa a resposta limpa se não encontrar uma frase completa
 
     return jsonify({
         "categoria": categoria_final,
         "resposta_sugerida": resposta_sugerida,
-        "email_recebido": email_content,
         "raw_classification": classification_results
     })
 
