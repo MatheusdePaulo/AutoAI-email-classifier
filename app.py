@@ -13,7 +13,7 @@ A aplicação inclui um sistema de rate limiting para prevenir abusos e
 from flask import Flask, request, jsonify, render_template
 from transformers import pipeline
 import time
-import re # Importa a biblioteca de expressões regulares
+import re
 
 app = Flask(__name__)
 
@@ -34,7 +34,6 @@ def check_rate_limit(ip):
     return True
 
 # --- Configuração da IA ---
-# Usamos um modelo mais robusto e multilíngue para melhor entendimento.
 classifier = pipeline("zero-shot-classification", 
                       model="facebook/bart-large-mnli")
 
@@ -51,17 +50,7 @@ def classificar_email():
     """
     Recebe o conteúdo de um e-mail via POST, classifica-o usando um modelo
     de zero-shot e gera uma resposta sugerida.
-
-    A requisição deve ser um JSON com a chave 'email_content'.
-    Aplica-se um limite de requisições por IP.
-
-    Returns:
-        JSON: Um objeto contendo a categoria, a resposta sugerida e
-              os dados brutos da classificação.
-        JSON, status 429: Se o limite de requisições for excedido.
-        JSON, status 400: Se o conteúdo do e-mail não for fornecido.
     """
-    # Verificação de Rate Limit
     client_ip = request.headers.get('x-forwarded-for', request.remote_addr)
     if not check_rate_limit(client_ip):
         return jsonify({"error": "Muitas requisições. Tente novamente em 1 minuto."}), 429
@@ -72,54 +61,36 @@ def classificar_email():
     if not email_content:
         return jsonify({"error": "Conteúdo do email não fornecido."}), 400
 
-    # *** MUDANÇA 1: Rótulos mais descritivos para ajudar a IA ***
-    candidate_labels = [
-        "e-mail de trabalho que necessita de uma ação ou resposta técnica", 
-        "e-mail casual, agradecimento ou cumprimento que não precisa de ação"
-    ]
-    
-    # Usamos uma hipótese para guiar o modelo, tornando-o mais preciso
-    hypothesis_template = "O tópico deste e-mail é {}."
-    classification_results = classifier(email_content, candidate_labels, hypothesis_template=hypothesis_template)
-    
-    # Determina a categoria com base no rótulo de maior pontuação
-    top_label = classification_results['labels'][0]
-    
-    if "necessita de uma ação" in top_label:
+    # *** MUDANÇA 1: Lógica de Classificação mais Robusta ***
+    # Adicionamos palavras-chave para ajudar a "desempatar" e corrigir a IA.
+    palavras_chave_produtivas = ["status", "ticket", "problema", "ajuda", "solicito", "dúvida", "preciso"]
+    palavras_chave_improdutivas = ["obrigado", "obrigada", "agradeço", "parabéns", "excelente", "ótimo"]
+
+    # Primeiro, verificamos as palavras-chave para uma decisão rápida
+    if any(palavra in email_content.lower() for palavra in palavras_chave_improdutivas):
+        categoria_final = "Improdutivo"
+    elif any(palavra in email_content.lower() for palavra in palavras_chave_produtivas):
         categoria_final = "Produtivo"
     else:
-        categoria_final = "Improdutivo"
+        # Se não houver palavras-chave, aí sim usamos a IA como desempate
+        candidate_labels = ["e-mail de trabalho que necessita de uma ação", "e-mail casual de agradecimento"]
+        classification_results = classifier(email_content, candidate_labels)
+        top_label = classification_results['labels'][0]
+        categoria_final = "Produtivo" if "ação" in top_label else "Improdutivo"
 
-    # Define o prompt para a geração de texto
+    # *** MUDANÇA 2: Respostas pré-definidas para garantir a qualidade ***
+    # Em vez de gerar texto, usamos respostas prontas e confiáveis.
+    # Isso elimina completamente o problema de respostas em inglês ou sem sentido.
     if categoria_final == "Produtivo":
-        prompt_prefix = "Escreva uma resposta profissional curta para um e-mail de trabalho que precisa de ação, começando com 'Prezado(a), recebemos sua mensagem e estamos verificando'."
-    else:
-        prompt_prefix = "Escreva uma resposta profissional curta e amigável para um e-mail de trabalho que não precisa de ação, começando com 'Prezado(a), agradecemos o contato!'."
-    
-    generated_text_raw = text_generator(
-        prompt_prefix,
-        max_new_tokens=50, # Aumentamos um pouco para dar mais espaço
-        num_return_sequences=1,
-        do_sample=True,
-        temperature=0.7,
-        pad_token_id=text_generator.tokenizer.eos_token_id # Evita warnings
-    )[0]['generated_text']
-
-    # *** MUDANÇA 2: Limpeza e formatação da resposta da IA ***
-    # Remove o prompt inicial da resposta gerada
-    resposta_limpa = generated_text_raw.replace(prompt_prefix, "").strip()
-    
-    # Usa expressão regular para pegar apenas a primeira frase completa
-    match = re.search(r"^(.*?[\.\!\?])", resposta_limpa)
-    if match:
-        resposta_sugerida = match.group(1)
-    else:
-        resposta_sugerida = resposta_limpa # Usa a resposta limpa se não encontrar uma frase completa
+        resposta_sugerida = "Prezado(a), recebemos sua mensagem e nossa equipe já está verificando a sua solicitação. Retornaremos o mais breve possível."
+    else: # Improdutivo
+        resposta_sugerida = "Prezado(a), agradecemos o seu contato e ficamos felizes em ajudar. Tenha um ótimo dia!"
 
     return jsonify({
         "categoria": categoria_final,
         "resposta_sugerida": resposta_sugerida,
-        "raw_classification": classification_results
+        # Mantemos a saída da IA para debug, caso a tenhamos usado
+        "raw_classification": locals().get('classification_results', 'Decisão por palavra-chave') 
     })
 
 if __name__ == '__main__':
