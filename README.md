@@ -132,6 +132,12 @@ A aplicação está configurada para deploy automático no Hugging Face Spaces a
 
 ---
 
+## 💡 Limitações e Próximos Passos
+
+* **Suporte a Arquivos PDF:** O desafio sugere o suporte ao upload de arquivos `.pdf`. Para garantir a máxima estabilidade e qualidade na extração do conteúdo para a IA, a implementação atual foca na inserção de texto direto e no upload de arquivos `.txt`. A extração de texto de arquivos PDF pode introduzir complexidades (como em PDFs baseados em imagem, que exigiriam OCR) e potenciais erros de formatação. A implementação de um parser de PDF robusto fica como um excelente próximo passo para a evolução do projeto, garantindo que a funcionalidade principal demonstrada estivesse 100% estável.
+
+---
+
 ## Contribuição
 
 Contribuições são bem-vindas! Se você tiver sugestões, melhorias ou encontrar bugs, sinta-se à vontade para abrir uma *issue* ou um *pull request*.
